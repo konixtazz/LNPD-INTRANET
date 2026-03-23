@@ -18,19 +18,19 @@
         th { background-color: #0A1931; color: #D4AF37; }
         tr:hover { background-color: #2A2A2A; }
         .btn-delete {
-    background-color: #b71c1c;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    margin-top: 20px;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+            background-color: #b71c1c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
 .btn-delete:hover {
     background-color: #f44336;
@@ -86,6 +86,39 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const tableBody = document.getElementById('table-body');
+
+        let currentDocId = null;
+
+        function ouvrirModale(docId) {
+            const data = tousLesDossiers[docId];
+            if(!data) return;
+
+            currentDocId = docId;
+
+            mNom.innerText = data.nom;
+            mPrenom.innerText = data.prenom;
+
+            modal.style.display = "block";
+        }
+
+        document.getElementById('btn-supprimer-confirm').onclick = async function() {
+            if (!currentDocId) return;
+
+            const confirmation = confirm(`Êtes-vous sûr de vouloir supprimer définitivement le casier de ${tousLesDossiers[currentDocId].nom} ? Cette action est irréversible.`);
+
+            if (confirmation) {
+                try {
+                    await db.collection("casiers").doc(currentDocId).delete();
+                    
+                    modal.style.display = "none";
+                    alert("Dossier supprimé avec succès de la base centrale.");
+                    
+                } catch (error) {
+                    console.error("Erreur lors de la suppression :", error);
+                    alert("Erreur : Impossible de supprimer le dossier.");
+                }
+            }
+        };
 
         db.collection("casiers").orderBy("nom").onSnapshot((querySnapshot) => {
             tableBody.innerHTML = '';
