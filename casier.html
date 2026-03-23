@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>LAPD Intranet - Base de données</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #E0E0E0; margin: 0; }
+        header { background: #0A1931; padding: 20px; text-align: center; border-bottom: 3px solid #D4AF37; }
+        header h1 { color: white; margin: 0; }
+        header p { color: #D4AF37; margin: 5px 0 0; font-weight: bold; }
+        nav { display: flex; justify-content: center; background: #000; padding: 10px; }
+        nav a { color: white; text-decoration: none; padding: 10px 20px; margin: 0 5px; border-radius: 4px; border: 1px solid transparent; }
+        nav a:hover, nav a.active { background: #0A1931; border-color: #D4AF37; color: #D4AF37; }
+        main { padding: 30px; max-width: 1000px; margin: 0 auto; }
+        h2 { color: #D4AF37; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #1E1E1E; border-radius: 8px; overflow: hidden;}
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #444; }
+        th { background-color: #0A1931; color: #D4AF37; }
+        tr:hover { background-color: #2A2A2A; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Los Angeles Police Department</h1>
+        <p>Protéger et Servir - Archives Criminelles</p>
+    </header>
+
+    <nav>
+        <a href="index.html">Saisie / Accueil</a>
+        <a href="casier.html" class="active">Consulter les Casiers</a>
+    </nav>
+
+    <main>
+        <h2>Base de Données Criminelle Centrale</h2>
+        <p><em>Actualisation en temps réel (Triée de A à Z par Nom)</em></p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Date du Délit</th>
+                    <th>Motif</th>
+                    <th>Peine</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <tr><td colspan="5">Connexion au serveur du L.A.P.D en cours...</td></tr>
+            </tbody>
+        </table>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBrDH5B7_V8GzNpidNePIS3P9YoWgi72g",
+            authDomain: "lnpd-intranet.firebaseapp.com",
+            projectId: "lnpd-intranet",
+            storageBucket: "lnpd-intranet.firebasestorage.app",
+            messagingSenderId: "169347041342",
+            appId: "1:169347041342:web:3b3ca7a3aa01eb308ae96f"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const tableBody = document.getElementById('table-body');
+
+        db.collection("casiers").orderBy("nom").onSnapshot((querySnapshot) => {
+            tableBody.innerHTML = '';
+            
+            if(querySnapshot.empty) {
+                tableBody.innerHTML = '<tr><td colspan="5">Aucun casier enregistré.</td></tr>';
+                return;
+            }
+
+            querySnapshot.forEach((doc) => {
+                const dossier = doc.data();
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${dossier.nom}</strong></td>
+                    <td>${dossier.prenom}</td>
+                    <td>${dossier.date}</td>
+                    <td>${dossier.motif}</td>
+                    <td>${dossier.peine}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        });
+    </script>
+</body>
+</html>

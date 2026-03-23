@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>LAPD Intranet - Saisie</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #E0E0E0; margin: 0; }
+        header { background: #0A1931; padding: 20px; text-align: center; border-bottom: 3px solid #D4AF37; }
+        header h1 { color: white; margin: 0; }
+        header p { color: #D4AF37; margin: 5px 0 0; font-weight: bold; }
+        nav { display: flex; justify-content: center; background: #000; padding: 10px; }
+        nav a { color: white; text-decoration: none; padding: 10px 20px; margin: 0 5px; border-radius: 4px; border: 1px solid transparent; }
+        nav a:hover, nav a.active { background: #0A1931; border-color: #D4AF37; color: #D4AF37; }
+        main { padding: 30px; max-width: 800px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 10px; background: #2A2A2A; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box;}
+        button { background: #D4AF37; color: black; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        button:hover { background: #b5952f; }
+        h2 { color: #D4AF37; border-bottom: 1px solid #333; padding-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Lunaria National Police Department</h1>
+        <p>Protéger et Servir - Centre de Saisie</p>
+    </header>
+
+    <nav>
+        <a href="index.html" class="active">Saisie / Accueil</a>
+        <a href="casier.html">Consulter les Casiers</a>
+    </nav>
+
+    <main>
+        <h2>Enregistrer un nouveau délit</h2>
+        <form id="casier-form">
+            <div class="form-group">
+                <label>Nom du suspect :</label>
+                <input type="text" id="nom" required placeholder="Ex: DUPONT">
+            </div>
+            <div class="form-group">
+                <label>Prénom du suspect :</label>
+                <input type="text" id="prenom" required placeholder="Ex: Jean">
+            </div>
+            <div class="form-group">
+                <label>Date de l'infraction :</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="form-group">
+                <label>Motif :</label>
+                <textarea id="motif" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Peine appliquée :</label>
+                <input type="text" id="peine" required>
+            </div>
+            <button type="submit">Envoyer à la base de données</button>
+        </form>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBrDH5B7_V8GzNpidNePIS3P9YoWgi72g",
+            authDomain: "lnpd-intranet.firebaseapp.com",
+            projectId: "lnpd-intranet",
+            storageBucket: "lnpd-intranet.firebasestorage.app",
+            messagingSenderId: "169347041342",
+            appId: "1:169347041342:web:3b3ca7a3aa01eb308ae96f"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        document.getElementById('casier-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const nomVal = document.getElementById('nom').value.toUpperCase();
+            const prenomVal = document.getElementById('prenom').value;
+            const dateVal = document.getElementById('date').value;
+            const motifVal = document.getElementById('motif').value;
+            const peineVal = document.getElementById('peine').value;
+
+            db.collection("casiers").add({
+                nom: nomVal,
+                prenom: prenomVal,
+                date: dateVal,
+                motif: motifVal,
+                peine: peineVal,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                alert("Casier transmis au serveur central !");
+                document.getElementById('casier-form').reset();
+            })
+            .catch((error) => {
+                console.error("Erreur lors de l'ajout : ", error);
+                alert("Erreur de connexion au serveur.");
+            });
+        });
+    </script>
+</body>
+</html>
