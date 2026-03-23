@@ -2,136 +2,143 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>LAPD Intranet - Saisie</title>
+    <title>LAPD - Saisie des Casiers</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #E0E0E0; margin: 0; }
-        header { background: #0A1931; padding: 20px; text-align: center; border-bottom: 3px solid #D4AF37; }
-        header h1 { color: white; margin: 0; }
-        header p { color: #D4AF37; margin: 5px 0 0; font-weight: bold; }
+        :root { --lapd-blue: #0A1931; --lapd-gold: #D4AF37; --bg: #121212; --card: #1E1E1E; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #E0E0E0; margin: 0; }
+        header { background: var(--lapd-blue); padding: 20px; text-align: center; border-bottom: 3px solid var(--lapd-gold); }
+        header h1 { color: white; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
         nav { display: flex; justify-content: center; background: #000; padding: 10px; }
-        nav a { color: white; text-decoration: none; padding: 10px 20px; margin: 0 5px; border-radius: 4px; border: 1px solid transparent; }
-        nav a:hover, nav a.active { background: #0A1931; border-color: #D4AF37; color: #D4AF37; }
+        nav a { color: white; text-decoration: none; padding: 10px 20px; margin: 0 5px; border-radius: 4px; border: 1px solid transparent; transition: 0.3s; }
+        nav a:hover, nav a.active { background: var(--lapd-blue); border-color: var(--lapd-gold); color: var(--lapd-gold); }
         main { padding: 30px; max-width: 800px; margin: 0 auto; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, textarea { width: 100%; padding: 10px; background: #2A2A2A; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box;}
-        button { background: #D4AF37; color: black; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 4px; }
-        button:hover { background: #b5952f; }
-        h2 { color: #D4AF37; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--lapd-gold); }
+        input, textarea { width: 100%; padding: 12px; background: #2A2A2A; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; font-size: 15px; }
+        input[type="file"] { background: transparent; border: 1px dashed #666; cursor: pointer; }
+        button { background: var(--lapd-gold); color: black; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; border-radius: 4px; width: 100%; font-size: 16px; margin-top: 10px; transition: 0.2s; }
+        button:hover { background: #b5952f; transform: translateY(-2px); }
+        button:disabled { background: #555; cursor: not-allowed; }
+        #status { text-align: center; margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Lunaria National Police Department</h1>
-        <p>Protéger et Servir - Centre de Saisie</p>
-    </header>
+<header>
+    <h1>Los Angeles Police Department</h1>
+    <p style="color:var(--lapd-gold); margin:5px 0 0 0;">INTRANET DE SAISIE CRIMINELLE</p>
+</header>
 
-    <nav>
-        <a href="index.html" class="active">Saisie / Accueil</a>
-        <a href="casier.html">Consulter les Casiers</a>
-    </nav>
+<nav>
+    <a href="index.html" class="active">Nouvelle Saisie</a>
+    <a href="casier.html">Base de Données</a>
+</nav>
 
-    <main>
-        <h2>Enregistrer un nouveau délit</h2>
-        <form id="casier-form">
-            <div class="form-group">
-                <label>Nom du suspect :</label>
-                <input type="text" id="nom" required placeholder="Ex: DUPONT">
-            </div>
-            <div class="form-group">
-                <label>Prénom du suspect :</label>
-                <input type="text" id="prenom" required placeholder="Ex: Jean">
-            </div>
-            <div class="form-group">
-                <label>Date de l'infraction :</label>
-                <input type="date" id="date" required>
-            </div>
-            <div class="form-group">
-                <label>Motif :</label>
-                <textarea id="motif" rows="3" required></textarea>
-            </div>
-            <div class="form-group">
-                <label>Peine appliquée :</label>
-                <input type="text" id="peine" required>
-            </div>
-            <button type="submit">Envoyer à la base de données</button>
-        </form>
-    </main>
-
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDBrDH5B7_V8GzNpidNePIS3P9YoWgi72g",
-            authDomain: "lnpd-intranet.firebaseapp.com",
-            projectId: "lnpd-intranet",
-            storageBucket: "lnpd-intranet.firebasestorage.app",
-            messagingSenderId: "169347041342",
-            appId: "1:169347041342:web:3b3ca7a3aa01eb308ae96f"
-        };
-
-        const IMGBB_API_KEY = "7a8ec03219c9288f302e5da124cf5f13";
-
-firebase.initializeApp(FIREBASE_CONFIG);
-const db = firebase.firestore();
-
-const form = document.getElementById('casier-form');
-const submitBtn = document.getElementById('submit-btn');
-const statusMsg = document.getElementById('status-message');
-
-form.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    submitBtn.disabled = true;
-    statusMsg.innerText = "⏳ Traitement en cours...";
-
-    const photoFile = document.getElementById('photo-file').files[0];
-    let finalPhotoUrl = null;
-
-    if (photoFile) {
-        statusMsg.innerText = "📤 Téléchargement de l'image...";
+<main>
+    <form id="casier-form">
+        <div class="form-group">
+            <label>NOM (Majuscules) :</label>
+            <input type="text" id="nom" required placeholder="Ex: JOHNSON">
+        </div>
+        <div class="form-group">
+            <label>PRÉNOM :</label>
+            <input type="text" id="prenom" required placeholder="Ex: Carl">
+        </div>
+        <div class="form-group">
+            <label>DATE DE NAISSANCE :</label>
+            <input type="text" id="naissance" required placeholder="Ex: 12/04/1992">
+        </div>
+        <div class="form-group">
+            <label>DATE DES FAITS :</label>
+            <input type="date" id="date-crime" required>
+        </div>
+        <div class="form-group">
+            <label>PHOTO DU SUSPECT (Mugshot) :</label>
+            <input type="file" id="photo-file" accept="image/*">
+        </div>
+        <div class="form-group">
+            <label>CRIMES ET DÉLITS :</label>
+            <textarea id="motif" rows="4" required placeholder="Détaillez les actes commis..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>PEINE APPLIQUÉE :</label>
+            <input type="text" id="peine" required placeholder="Ex: 20 ans de prison + 10.000$">
+        </div>
         
-        const formData = new FormData();
-        formData.append("image", photoFile);
+        <button type="submit" id="submit-btn">ARCHIVER LE DOSSIER</button>
+        <div id="status"></div>
+    </form>
+</main>
 
-        try {
-            const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                method: "POST",
-                body: formData
-            });
-            const result = await response.json();
-            finalPhotoUrl = result.data.url;
-        } catch (error) {
-            console.error("Erreur ImgBB:", error);
-            alert("Erreur lors de l'envoi de l'image.");
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+
+<script>
+    // ⚠️ À REMPLACER PAR TES INFOS
+    const firebaseConfig = {
+        apiKey: "TA_CLE_API",
+        authDomain: "TON_PROJET.firebaseapp.com",
+        projectId: "TON_PROJET"
+    };
+    const IMGBB_API_KEY = "TA_CLE_IMGBB"; 
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const form = document.getElementById('casier-form');
+    const btn = document.getElementById('submit-btn');
+    const status = document.getElementById('status');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        btn.disabled = true;
+        status.innerText = "⏳ Traitement du dossier...";
+        status.style.color = "white";
+
+        let imageUrl = null;
+        const file = document.getElementById('photo-file').files[0];
+
+        // 1. Envoi à ImgBB
+        if(file) {
+            status.innerText = "📤 Téléchargement de l'image...";
+            const formData = new FormData();
+            formData.append("image", file);
+            try {
+                const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await res.json();
+                imageUrl = data.data.url;
+            } catch(err) {
+                console.error(err);
+                alert("Erreur image, le casier sera créé sans photo.");
+            }
         }
-    }
 
-    try {
-        statusMsg.innerText = "📝 Enregistrement du casier...";
-        await db.collection("casiers").add({
-            nom: document.getElementById('nom').value.toUpperCase().trim(),
-            prenom: document.getElementById('prenom').value.trim(),
-            naissance: document.getElementById('naissance').value.trim(),
-            dateInfraction: document.getElementById('date-infraction').value,
-            motif: document.getElementById('motif').value.trim(),
-            peine: document.getElementById('peine').value.trim(),
-            photoUrl: finalPhotoUrl,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        statusMsg.innerText = "✅ Terminé ! Dossier archivé.";
-        form.reset();
-    } catch (error) {
-        console.error("Erreur Firebase:", error);
-        statusMsg.innerText = "❌ Erreur de base de données.";
-    } finally {
-        submitBtn.disabled = false;
-        setTimeout(() => statusMsg.innerText = "", 4000);
-    }
-});
-    </script>
+        // 2. Envoi à Firestore
+        try {
+            status.innerText = "📝 Enregistrement en base de données...";
+            await db.collection("casiers").add({
+                nom: document.getElementById('nom').value.toUpperCase().trim(),
+                prenom: document.getElementById('prenom').value.trim(),
+                naissance: document.getElementById('naissance').value.trim(),
+                dateCrime: document.getElementById('date-crime').value,
+                motif: document.getElementById('motif').value.trim(),
+                peine: document.getElementById('peine').value.trim(),
+                photoUrl: imageUrl,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            status.innerText = "✅ DOSSIER ARCHIVÉ AVEC SUCCÈS !";
+            status.style.color = "#4caf50";
+            form.reset();
+        } catch(err) {
+            status.innerText = "❌ Erreur de connexion au central.";
+            status.style.color = "#f44336";
+        } finally {
+            btn.disabled = false;
+        }
+    });
+</script>
 </body>
 </html>
